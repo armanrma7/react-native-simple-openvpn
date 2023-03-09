@@ -102,19 +102,26 @@ RCT_EXPORT_METHOD(disconnect : (RCTPromiseResolveBlock)resolve rejecter : (RCTPr
 
   NSString *const ovpnString = self.ovpnOptions[@"ovpnString"] ? self.ovpnOptions[@"ovpnString"] : @"";
   NSData *data;
+  NSError *error;
 
   if ([ovpnString length] != 0) {
     data = [ovpnString dataUsingEncoding:NSUTF8StringEncoding];
   } else {
-    NSString *const ovpnFileName = self.ovpnOptions[@"ovpnFileName"] ? self.ovpnOptions[@"ovpnFileName"] : @"client";
-    NSURL *url = [[NSBundle mainBundle] URLForResource:ovpnFileName withExtension:@"ovpn"];
+      //NSString *const ovpnFileName = self.ovpnOptions[@"ovpnFileName"] ? self.ovpnOptions[@"ovpnFileName"] : @"client";
+         NSString *const assetsPath = self.ovpnOptions[@"assetsPath"] ? self.ovpnOptions[@"assetsPath"] : @"assetsPath";
+   //    NSURL *url = [[NSBundle mainBundle] URLForResource:ovpnFileName withExtension:@"ovpn"];
 
-    if (url == nil) {
-      reject(@"E_NO_OVPN_FILE_ERROR", @"There are no ovpn file", nil);
-      return;
-    }
+        //NSURL *url = [[NSURL alloc] initWithString:assetsPath];
 
-    data = [[NSData alloc] initWithContentsOfURL:url];
+
+       if (assetsPath == nil) {
+         reject(@"E_NO_OVPN_FILE_ERROR", @"There are no ovpn file", nil);
+         return;
+       }
+
+       data = [NSData dataWithContentsOfFile:assetsPath
+                                     options:0
+                                       error:&error];
   }
 
   NETunnelProviderProtocol *tunel = [NETunnelProviderProtocol new];

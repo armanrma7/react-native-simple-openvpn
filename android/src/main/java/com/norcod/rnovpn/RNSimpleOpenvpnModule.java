@@ -33,7 +33,8 @@ import android.os.RemoteException;
 import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-
+import java.io.FileInputStream;
+import java.util.ArrayList;
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.BaseActivityEventListener;
@@ -60,7 +61,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.lang.Exception;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -93,17 +93,17 @@ public class RNSimpleOpenvpnModule extends ReactContextBaseJavaModule implements
 
   private enum VpnState {
     VPN_STATE_DISCONNECTED,
-    VPN_STATE_CONNECTING,
-    VPN_STATE_CONNECTED,
-    VPN_STATE_DISCONNECTING,
-    VPN_OTHER_STATE,
+            VPN_STATE_CONNECTING,
+            VPN_STATE_CONNECTED,
+            VPN_STATE_DISCONNECTING,
+            VPN_OTHER_STATE,
   }
 
   private enum CompatMode {
     MODERN_DEFAULTS,
-    OVPN_TWO_FIVE_PEER,
-    OVPN_TWO_FOUR_PEER,
-    OVPN_TWO_THREE_PEER,
+            OVPN_TWO_FIVE_PEER,
+            OVPN_TWO_FOUR_PEER,
+            OVPN_TWO_THREE_PEER,
   }
 
   private static ReactApplicationContext reactContext;
@@ -248,12 +248,12 @@ public class RNSimpleOpenvpnModule extends ReactContextBaseJavaModule implements
       String password = ovpnOptions.getOrDefault("password", "").toString();
       String notificationTitle = ovpnOptions.getOrDefault("notificationTitle", "OpenVPN").toString();
       int compatMode = ovpnOptions.get("compatMode") != null ? ((Double)ovpnOptions.get("compatMode")).intValue()
-                                                             : CompatMode.MODERN_DEFAULTS.ordinal();
+              : CompatMode.MODERN_DEFAULTS.ordinal();
       boolean useLegacyProvider = (boolean)ovpnOptions.getOrDefault("useLegacyProvider", false);
       boolean useCustomConfig = (boolean)ovpnOptions.getOrDefault("useCustomConfig", false);
       String customConfigOptions = ovpnOptions.getOrDefault("customConfigOptions", "").toString();
       ArrayList<String> allowedAppsVpn =
-          (ArrayList<String>)ovpnOptions.getOrDefault("allowedAppsVpn", new ArrayList<>());
+              (ArrayList<String>)ovpnOptions.getOrDefault("allowedAppsVpn", new ArrayList<>());
       boolean allowedAppsVpnAreDisallowed = (boolean)ovpnOptions.getOrDefault("allowedAppsVpnAreDisallowed", true);
 
       cp.parseConfig(new StringReader(config));
@@ -288,11 +288,8 @@ public class RNSimpleOpenvpnModule extends ReactContextBaseJavaModule implements
   private String getOvpnFileContent() throws Exception {
     String content = "";
     String assetsPath = ovpnOptions.getOrDefault("assetsPath", "").toString();
-    String ovpnFileName = ovpnOptions.getOrDefault("ovpnFileName", "client").toString();
-    String ovpnFilePath = assetsPath + ovpnFileName + ".ovpn";
-
-    InputStream conf = reactContext.getAssets().open(ovpnFilePath);
-    InputStreamReader isr = new InputStreamReader(conf);
+    FileInputStream file = new FileInputStream(assetsPath);
+    InputStreamReader isr = new InputStreamReader(file);
     BufferedReader br = new BufferedReader(isr);
     String line;
 
@@ -309,7 +306,7 @@ public class RNSimpleOpenvpnModule extends ReactContextBaseJavaModule implements
 
   private String getModifiedOvpnConfig(String ovpnConfig, String remoteAddress) {
     final String regex =
-        "^remote\\s(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\s((6553[0-5])|(655[0-2][0-9])|(65[0-4][0-9]{2})|(6[0-4][0-9]{3})|([1-5][0-9]{4})|([0-5]{0,5})|([0-9]{1,4}))$";
+            "^remote\\s(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\s((6553[0-5])|(655[0-2][0-9])|(65[0-4][0-9]{2})|(6[0-4][0-9]{3})|([1-5][0-9]{4})|([0-5]{0,5})|([0-9]{1,4}))$";
     final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
     final Matcher matcher = pattern.matcher(ovpnConfig);
 
